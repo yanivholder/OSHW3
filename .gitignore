@@ -4,4 +4,4 @@ dry/CMakeLists.txt
 wet/*.o
 wet/.idea/
 wet/cmake-build-debug/
-wet/CMakeLists.txt
+wet/my_main.cpp

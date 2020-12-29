@@ -5,13 +5,13 @@
 
 
 Semaphore::Semaphore(){
-    counter = 0;
+    this->counter = 0;
     pthread_mutex_init(&m, NULL);
     pthread_cond_init(&c, NULL);
 }
 
 Semaphore::Semaphore(unsigned val){
-    counter = val;
+    this->counter = val;
     pthread_mutex_init(&m, NULL);
     pthread_cond_init(&c, NULL);
 }
@@ -24,6 +24,7 @@ Semaphore::~Semaphore(){
 void Semaphore::up(){
 
     pthread_mutex_lock(&m);
+    assert(counter >= 0);
     this->counter++;
     pthread_cond_signal(&c);
     pthread_mutex_unlock(&m);
@@ -35,6 +36,7 @@ void Semaphore::down(){
     while(counter==0){
         pthread_cond_wait(&c, &m);
     }
+    assert(counter > 0);
     this->counter--;
     assert(counter >= 0);
     pthread_mutex_unlock(&m);
