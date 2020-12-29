@@ -1,0 +1,7 @@
+dry/.idea/
+dry/cmake-build-debug/
+dry/CMakeLists.txt
+wet/*.o
+wet/.idea/
+wet/cmake-build-debug/
+wet/CMakeLists.txt
