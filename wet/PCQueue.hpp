@@ -7,18 +7,34 @@ template <typename T>
 class PCQueue
 {
 public:
-    PCQueue();
-    ~PCQueue();
+    PCQueue(){
+        this->q = std::queue<T>();
+        pthread_mutex_init(&this->m, NULL);
+        pthread_cond_init(&this->c, NULL);
+    }
 
-    // Blocks while queue is empty. When queue holds items, allows for a single
-    // thread to enter and remove an item from the front of the queue and return it.
-    // Assumes multiple consumers.
-    T pop();
+    ~PCQueue(){
+        pthread_mutex_destroy(&m);
+        pthread_cond_destroy(&c);
+    }
 
-    // Allows for producer to enter with *minimal delay* and push items to back of the queue.
-    // Hint for *minimal delay* - Allow the consumers to delay the producer as little as possible.
-    // Assumes single producer
-    void push(const T& item);
+    T pop(){
+        pthread_mutex_lock(&m);
+        while(q.empty()){
+            pthread_cond_wait(&c, &m);
+        }
+        T to_return = this->q.front();
+        this->q.pop();
+        pthread_mutex_unlock(&m);
+        return to_return;
+    }
+
+    void push(const T& item){
+        pthread_mutex_lock(&this->m);
+        this->q.push(item);
+        pthread_cond_signal(&this->c);
+        pthread_mutex_unlock(&this->m);
+    }
 
 
 private:

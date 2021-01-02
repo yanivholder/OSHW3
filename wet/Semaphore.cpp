@@ -36,6 +36,11 @@ void Semaphore::down(){
         pthread_cond_wait(&c, &m);
     }
     this->counter--;
+    assert(counter >= 0);
     pthread_mutex_unlock(&m);
+}
+
+int Semaphore::get_val(){
+    return this->counter;
 }
 
