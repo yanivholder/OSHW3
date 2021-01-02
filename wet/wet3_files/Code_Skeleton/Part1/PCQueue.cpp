@@ -28,14 +28,6 @@ void PCQueue<T>::push(const T& item){
 template <typename T>
 T PCQueue<T>::pop(){
 
-<<<<<<< HEAD:wet/wet3_files/Code_Skeleton/Part1/PCQueue.cpp
-    pthread_mutex_lock(&m);
-    while(q.empty){
-        pthread_cond_wait(&c, &m);
-    }
-    T to_return = this->q.dequeue();
-    pthread_mutex_unlock(&m);
-=======
     pthread_mutex_lock(&this->m);
     while(this->q.empty()){
         pthread_cond_wait(&this->c, &this->m);
@@ -43,6 +35,5 @@ T PCQueue<T>::pop(){
     T to_return = this->q.front();
     this->q.pop();
     pthread_mutex_unlock(&this->m);
->>>>>>> wip:wet/PCQueue.cpp
     return to_return;
 }
