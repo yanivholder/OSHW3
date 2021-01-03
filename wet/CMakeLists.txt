@@ -3,6 +3,7 @@ project(wet)
 
 set(CMAKE_CXX_STANDARD 11)
 
-#add_executable(wet main.cpp PCQueue.cpp Semaphore.cpp)
+add_executable(part1 ./Code_Skeleton/Part1/main_part1.cpp ./Code_Skeleton/Part1/PCQueue.cpp ./Code_Skeleton/Part1/Semaphore.cpp)
 
-add_executable(experiments my_main.cpp)
+add_executable(part2 ./Code_Skeleton/Part2/main.cpp ./Code_Skeleton/Part1/PCQueue.cpp ./Code_Skeleton/Part1/Semaphore.cpp
+        ./Code_Skeleton/Part2/Game.cpp ./Code_Skeleton/Part2/utils.cpp)

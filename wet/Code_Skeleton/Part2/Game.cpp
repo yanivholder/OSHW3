@@ -1,9 +1,10 @@
 #include "Game.hpp"
+#include "utils.hpp"
 
 
 static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 /*--------------------------------------------------------------------------------
-								
+
 --------------------------------------------------------------------------------*/
 
 static bool inbound(int i, int j, int lim_x, int lim_y){
@@ -102,10 +103,17 @@ void Game::run() {
 }
 
 void Game::_init_game() {
-
 	// Create game fields - Consider using utils:read_file, utils::split
+    this->board_curr = new vector<vector<string>>;
+    vector<string> lines = utils::read_lines(this->filename);
+    for(auto & line : lines)
+    {
+        this->board_curr->push_back(utils::split(line, ' '));
+    }
+    this->board_next = new vector<vector<string>>;
 	// Create & Start threads
 	// Testing of your implementation will presume all threads are started here
+
 }
 
 void Game::_step(uint curr_gen) {
@@ -125,14 +133,24 @@ void Game::_step(uint curr_gen) {
 }
 
 void Game::_destroy_game(){
-	// Destroys board and frees all threads and resources 
+	// Destroys board and frees all threads and resources
+    delete this->board_next;
+    delete this->board_curr;
 	// Not implemented in the Game's destructor for testing purposes. 
 	// All threads must be joined here
-	for (uint i = 0; i < m_thread_num; ++i) {
-        m_threadpool[i]->join();
-    }
+//	for (uint i = 0; i < m_thread_num; ++i) {
+//        m_threadpool[i]->join();
+//    }
 }
 
+/*--------------------------------------------------------------------------------
+                            Our addition
+--------------------------------------------------------------------------------*/
+
+Game::Game(game_params gp) : interactive_on(gp.interactive_on), print_on(gp.print_on),
+                             m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) {}
+
+Game::~Game() {}
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
