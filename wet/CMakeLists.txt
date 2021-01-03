@@ -3,4 +3,6 @@ project(wet)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(wet main.cpp PCQueue.cpp Semaphore.cpp)
+#add_executable(wet main.cpp PCQueue.cpp Semaphore.cpp)
+
+add_executable(experiments my_main.cpp)

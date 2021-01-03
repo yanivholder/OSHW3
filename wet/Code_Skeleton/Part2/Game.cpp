@@ -5,6 +5,87 @@ static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
+
+static bool inbound(int i, int j, int lim_x, int lim_y){
+    if ((i >= 0 && i < lim_x) && (j >= 0 && j < lim_y)){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+int dominant_species(int species_hist[]){
+    int max_index=0;
+    int max_appearance=0;
+    for (int i = 1; i < 8; ++i) { //skip appearances of 0
+        if (species_hist[i] > max_appearance){
+            max_appearance = species_hist[i];
+            max_index = i;
+        }
+    }
+    return max_index;
+}
+
+static int color_in_next(vector<vector<int>>* board, int i, int j, int row_len, int col_len, bool dead){
+    int neighbour_count = 0;
+    int species_hist[8] = {0,0,0,0,0,0,0,0};
+    for (int k = -1; k <= 1 ; ++k) {
+        for (int l = -1; l <= 1; ++l) {
+            if (k == 0 && l == 0){
+                continue;
+            }
+            if (inbound(i+k, j+l, row_len, col_len) && (board[i+k][j+l] > 0)){
+                neighbour_count++;
+                species_hist[board[i+k][j+l]]++;
+            }
+        }
+    }
+    if ( !dead && (neighbour_count == 3 || neighbour_count == 2)){
+        return board[i][j];
+    } else if ( dead && neighbour_count == 3){
+        return dominant_species(species_hist);
+    } else{
+        return 0;
+    }
+}
+
+static int conformism(vector<vector<int>>* board, int i, int j, int row_len, int col_len){
+    int neighbour_count = 0;
+    int neighbour_sum = 0;
+    for (int k = -1; k <= 1 ; ++k) {
+        for (int l = -1; l <= 1; ++l) {
+            if (inbound(i+k, j+l, row_len, col_len) && (board[i+k][j+l] > 0)){
+                neighbour_count++;
+                neighbour_sum += board[i+k][j+l];
+            }
+        }
+    }
+    return round(neighbour_sum/neighbour_count);
+}
+
+void Game::Preform_Phase(bool first_phase){
+    int row_len = this->board->size();
+    int col_len = this->board[0].size()
+    for (int i = 0; i < row_len; ++i) {
+        for (int j = 0; j < col_len; ++j) {
+            bool dead = (this->board_curr[i][j] == 0);
+            if (first_phase){
+                this->board_next[i][j] = color_in_next(this->board_curr, i, j, row_len, col_len, dead);
+            } else if (!dead){ //we are in 2nd phase and the cell is alive, need to average it
+                this->board_next[i][j] = conformism(this->board_curr, i, j, row_len, col_len);
+            } else{
+                this->board_next[i][j] = 0;
+            }
+        }
+    }
+    //swap after we finished
+    auto temp = this->board_curr;
+    this->board_curr = this->board_next;
+    this->board_next = temp;
+}
+
+
 void Game::run() {
 
 	_init_game(); // Starts the threads and all other variables you need
@@ -28,9 +109,18 @@ void Game::_init_game() {
 }
 
 void Game::_step(uint curr_gen) {
-	// Push jobs to queue
-	// Wait for the workers to finish calculating 
-	// Swap pointers between current and next field 
+
+    bool is_first_phase = true;
+    Preform_Phase(is_first_phase);
+    is_first_phase = false;
+    Preform_Phase(is_first_phase);
+
+    // Push jobs to queue
+	//
+	// Wait for the workers to finish calculating
+	//
+	// Swap pointers between current and next field
+	//
 	// NOTE: Threads must not be started here - doing so will lead to a heavy penalty in your grade 
 }
 

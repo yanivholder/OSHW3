@@ -57,9 +57,17 @@ protected: // All members here are protected, instead of private for testing pur
 	vector<double> m_gen_hist;  	 // Timing history for generations: x=m_gen_hist[t] iff generation t was calculated in x microseconds
 	vector<Thread*> m_threadpool; // A storage container for your threads. This acts as the threadpool. 
 
+	//We Added:
+	vector<vector<int>>* board_curr;
+    vector<vector<int>>* board_next;
+
+    void Preform_Phase();
+	//
+
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 
 	bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
-	
+
+
 	// TODO: Add in your variables and synchronization primitives  
 
 };
