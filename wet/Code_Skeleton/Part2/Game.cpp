@@ -1,11 +1,25 @@
 #include "Game.hpp"
 #include "utils.hpp"
+#include <string.h>
 
 
 static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 /*--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------*/
+
+//static int str_to_num(string s){
+//    for (int i = 0; i < 7; ++i) {
+//        if (strcmp(s.c_str(), colors[i]) == 0){
+//            return i;
+//        }
+//    }
+//}
+//
+//static string num_to_str(int num){
+//    return (string)colors[num];
+//}
+
 
 static bool inbound(int i, int j, int lim_x, int lim_y){
     if ((i >= 0 && i < lim_x) && (j >= 0 && j < lim_y)){
@@ -16,7 +30,7 @@ static bool inbound(int i, int j, int lim_x, int lim_y){
     }
 }
 
-int dominant_species(int species_hist[]){
+static int dominant_species(int species_hist[]){
     int max_index=0;
     int max_appearance=0;
     for (int i = 1; i < 8; ++i) { //skip appearances of 0
@@ -28,7 +42,7 @@ int dominant_species(int species_hist[]){
     return max_index;
 }
 
-static int color_in_next(vector<vector<int>>* board, int i, int j, int row_len, int col_len, bool dead){
+static int color_in_next(int** board, int i, int j, int row_len, int col_len, bool dead){
     int neighbour_count = 0;
     int species_hist[8] = {0,0,0,0,0,0,0,0};
     for (int k = -1; k <= 1 ; ++k) {
@@ -51,7 +65,7 @@ static int color_in_next(vector<vector<int>>* board, int i, int j, int row_len, 
     }
 }
 
-static int conformism(vector<vector<int>>* board, int i, int j, int row_len, int col_len){
+static int conformism(int** board, int i, int j, int row_len, int col_len){
     int neighbour_count = 0;
     int neighbour_sum = 0;
     for (int k = -1; k <= 1 ; ++k) {
@@ -66,8 +80,8 @@ static int conformism(vector<vector<int>>* board, int i, int j, int row_len, int
 }
 
 void Game::Preform_Phase(bool first_phase){
-    int row_len = this->board->size();
-    int col_len = this->board[0].size()
+    int row_len = this->width;
+    int col_len = this->height;
     for (int i = 0; i < row_len; ++i) {
         for (int j = 0; j < col_len; ++j) {
             bool dead = (this->board_curr[i][j] == 0);
