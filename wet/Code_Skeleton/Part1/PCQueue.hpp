@@ -29,7 +29,7 @@ public:
         return to_return;
     }
 
-    void push(const T& item){
+    void push(const T item){
         pthread_mutex_lock(&this->m);
         this->q.push(item);
         pthread_cond_signal(&this->c);

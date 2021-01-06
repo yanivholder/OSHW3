@@ -58,12 +58,12 @@ protected: // All members here are protected, instead of private for testing pur
 	vector<Thread*> m_threadpool; // A storage container for your threads. This acts as the threadpool. 
 
 	// We Added:
-	int** board_curr;
-    int** board_next;
+    vector<vector<int>>* board_curr;
+    vector<vector<int>>* board_next;
     int height;
     int width;
     string filename;
-	void Preform_Phase(bool first_phase);
+	void Preform_Phase(bool first_phase, int upper, int lower);
 	//
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 

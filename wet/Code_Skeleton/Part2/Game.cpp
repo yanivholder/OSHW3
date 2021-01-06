@@ -42,7 +42,7 @@ static int dominant_species(int species_hist[]){
     return max_index;
 }
 
-static int color_in_next(int** board, int i, int j, int row_len, int col_len, bool dead){
+static int color_in_next(vector<vector<int>>& board, int i, int j, int row_len, int col_len, bool dead){
     int neighbour_count = 0;
     int species_hist[8] = {0,0,0,0,0,0,0,0};
     for (int k = -1; k <= 1 ; ++k) {
@@ -65,7 +65,7 @@ static int color_in_next(int** board, int i, int j, int row_len, int col_len, bo
     }
 }
 
-static int conformism(int** board, int i, int j, int row_len, int col_len){
+static int conformism(vector<vector<int>>& board, int i, int j, int row_len, int col_len){
     int neighbour_count = 0;
     int neighbour_sum = 0;
     for (int k = -1; k <= 1 ; ++k) {
@@ -79,18 +79,19 @@ static int conformism(int** board, int i, int j, int row_len, int col_len){
     return round(neighbour_sum/neighbour_count);
 }
 
-void Game::Preform_Phase(bool first_phase){
+
+void Game::Preform_Phase(bool first_phase, int upper, int lower){
     int row_len = this->width;
     int col_len = this->height;
-    for (int i = 0; i < row_len; ++i) {
+    for (int i = lower; i <= upper; ++i) {
         for (int j = 0; j < col_len; ++j) {
-            bool dead = (this->board_curr[i][j] == 0);
+            bool dead = ((*this->board_curr)[i][j] == 0);
             if (first_phase){
-                this->board_next[i][j] = color_in_next(this->board_curr, i, j, row_len, col_len, dead);
+                (*this->board_next)[i][j] = color_in_next(*this->board_curr, i, j, row_len, col_len, dead);
             } else if (!dead){ //we are in 2nd phase and the cell is alive, need to average it
-                this->board_next[i][j] = conformism(this->board_curr, i, j, row_len, col_len);
+                (*this->board_next)[i][j] = conformism(*this->board_curr, i, j, row_len, col_len);
             } else{
-                this->board_next[i][j] = 0;
+                (*this->board_next)[i][j] = 0;
             }
         }
     }
@@ -118,24 +119,19 @@ void Game::run() {
 
 void Game::_init_game() {
 	// Create game fields - Consider using utils:read_file, utils::split
-    this->board_curr = new vector<vector<string>>;
+    this->board_curr = new vector<vector<int>>;
     vector<string> lines = utils::read_lines(this->filename);
     for(auto & line : lines)
     {
-        this->board_curr->push_back(utils::split(line, ' '));
+//        this->board_curr->push_back(utils::split(line, ' '));
     }
-    this->board_next = new vector<vector<string>>;
+    this->board_next = new vector<vector<int>>;
 	// Create & Start threads
 	// Testing of your implementation will presume all threads are started here
 
 }
 
 void Game::_step(uint curr_gen) {
-
-    bool is_first_phase = true;
-    Preform_Phase(is_first_phase);
-    is_first_phase = false;
-    Preform_Phase(is_first_phase);
 
     // Push jobs to queue
 	//

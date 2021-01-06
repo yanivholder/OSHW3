@@ -5,3 +5,4 @@ wet/*.o
 wet/.idea/
 wet/cmake-build-debug/
 wet/my_main.cpp
+wet/main.cpp

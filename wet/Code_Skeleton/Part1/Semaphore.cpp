@@ -33,7 +33,7 @@ void Semaphore::up(){
 void Semaphore::down(){
 
     pthread_mutex_lock(&m);
-    while(counter==0){
+    while(counter<=0){
         pthread_cond_wait(&c, &m);
     }
     assert(counter > 0);
