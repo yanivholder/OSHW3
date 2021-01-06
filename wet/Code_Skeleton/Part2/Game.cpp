@@ -8,17 +8,17 @@ static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 
 --------------------------------------------------------------------------------*/
 
-//static int str_to_num(string s){
-//    for (int i = 0; i < 7; ++i) {
-//        if (strcmp(s.c_str(), colors[i]) == 0){
-//            return i;
-//        }
-//    }
-//}
-//
-//static string num_to_str(int num){
-//    return (string)colors[num];
-//}
+static int str_to_num(string s){
+    for (int i = 0; i < 7; ++i) {
+        if (strcmp(s.c_str(), colors[i]) == 0){
+            return i;
+        }
+    }
+}
+
+static string num_to_str(int num){
+    return (string)colors[num];
+}
 
 
 static bool inbound(int i, int j, int lim_x, int lim_y){
@@ -119,48 +119,107 @@ void Game::run() {
 
 void Game::_init_game() {
 	// Create game fields - Consider using utils:read_file, utils::split
-    this->board_curr = new vector<vector<int>>;
+    auto string_board = new vector<vector<string>>;
     vector<string> lines = utils::read_lines(this->filename);
     for(auto & line : lines)
     {
-//        this->board_curr->push_back(utils::split(line, ' '));
+        string_board->push_back(utils::split(line, ' '));
     }
+
+    this->width = (*string_board)[0].size();
+    this->height = string_board->size();
+    this->board_curr = new vector<vector<int>>;
     this->board_next = new vector<vector<int>>;
+    for(int i = 0; i < string_board->size(); i++)
+    {
+        std::transform(string_board[i].begin(), string_board[i].end(),
+                       std::back_inserter((*this->board_curr)[i]),
+                [](const string& element) { return std::stoi(element); });
+        (*this->board_next)[i] = (*this->board_curr)[i];
+    }
+    delete string_board;
 	// Create & Start threads
+
+	for (uint i = 0; i < m_thread_num; ++i) {
+        m_threadpool[i] = new GOLThread(i);
+        m_threadpool[i]->start();
+    }
 	// Testing of your implementation will presume all threads are started here
 
 }
 
 void Game::_step(uint curr_gen) {
 
-    // Push jobs to queue
-	//
+    int rows_for_job = this->height / this->m_thread_num;
+    job j;
+    vector<vector<int>>* tmp_board_p;
+
+    // Push jobs to queue (Phase 1)
+    Semaphore semph(-this->m_thread_num + 1);
+    j.is_first_phase = true;
+	for(int i = 0; i < this->m_thread_num - 1; i++)
+    {
+	    j.lower_row = i * rows_for_job;
+	    j.upper_row = ((i + 1) * rows_for_job) - 1;
+	    this->job_queue.push(j);
+    }
+	j.lower_row = (this->m_thread_num - 1) * rows_for_job;
+	j.upper_row = this->height - 1;
+	this->job_queue.push(j);
+
 	// Wait for the workers to finish calculating
-	//
+	semph.down();
+
 	// Swap pointers between current and next field
-	//
-	// NOTE: Threads must not be started here - doing so will lead to a heavy penalty in your grade 
+    tmp_board_p = this->board_next;
+    this->board_next = this->board_curr;
+    board_curr = tmp_board_p;
+    tmp_board_p = nullptr;
+
+    // Push jobs to queue (Phase 2)
+    semph = Semaphore(-this->m_thread_num + 1);
+    j.is_first_phase = false;
+    for(int i = 0; i < this->m_thread_num - 1; i++)
+    {
+        j.lower_row = i * rows_for_job;
+        j.upper_row = ((i + 1) * rows_for_job) - 1;
+        this->job_queue.push(j);
+    }
+    j.lower_row = (this->m_thread_num - 1) * rows_for_job;
+    j.upper_row = this->height - 1;
+    this->job_queue.push(j);
+
+    // Wait for the workers to finish calculating
+    semph.down();
+
+    // Swap pointers between current and next field
+    tmp_board_p = this->board_next;
+    this->board_next = this->board_curr;
+    board_curr = tmp_board_p;
+    tmp_board_p = nullptr;
+    // NOTE: Threads must not be started here - doing so will lead to a heavy penalty in your grade
 }
 
 void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources
     delete this->board_next;
     delete this->board_curr;
+    for (int i = 0; i < m_thread_num; ++i) {
+        m_threadpool[i]->join();
+    }
+
 	// Not implemented in the Game's destructor for testing purposes. 
 	// All threads must be joined here
-//	for (uint i = 0; i < m_thread_num; ++i) {
-//        m_threadpool[i]->join();
-//    }
 }
 
 /*--------------------------------------------------------------------------------
                             Our addition
 --------------------------------------------------------------------------------*/
 
-Game::Game(game_params gp) : interactive_on(gp.interactive_on), print_on(gp.print_on),
-                             m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) {}
+Game::Game(const game_params& gp) : interactive_on(gp.interactive_on), print_on(gp.print_on),
+                             m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) { }
 
-Game::~Game() {}
+Game::~Game() { }
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
@@ -176,7 +235,19 @@ inline void Game::print_board(const char* header) {
 		if (header != nullptr)
 			cout << "<------------" << header << "------------>" << endl;
 		
-		// TODO: Print the board 
+		// TODO: Print the board
+        cout << u8"╔" << string(u8"═") * this->width << u8"╗" << endl;
+        for (uint i = 0; i < this->height; ++i) {
+            cout << u8"║";
+            for (uint j = 0; j < this->width; ++j) {
+                if ((*this->board_curr)[i][j] > 0)
+                    cout << colors[(*this->board_curr)[i][j] % 7] << u8"█" << RESET;
+                else
+                    cout << u8"░";
+            }
+            cout << u8"║" << endl;
+        }
+        cout << u8"╚" << string(u8"═") * this->width << u8"╝" << endl;
 
 		// Display for GEN_SLEEP_USEC micro-seconds on screen 
 		if(interactive_on)

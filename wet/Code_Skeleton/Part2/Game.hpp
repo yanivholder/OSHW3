@@ -3,6 +3,8 @@
 
 #include "../Part1/Headers.hpp"
 #include "Thread.hpp"
+#include "../Part1/PCQueue.hpp"
+#include "../Part1/Semaphore.hpp"
 
 /*--------------------------------------------------------------------------------
 								  Species colors
@@ -28,13 +30,18 @@ struct game_params {
 	bool interactive_on; 
 	bool print_on; 
 };
+
+// We added
+
+//
+
 /*--------------------------------------------------------------------------------
 									Class Declaration
 --------------------------------------------------------------------------------*/
 class Game {
 public:
 
-	Game(game_params);
+	Game(const game_params&);
 	~Game();
 	void run(); // Runs the game
 	const vector<double> gen_hist() const; // Returns the generation timing histogram  
@@ -50,8 +57,8 @@ protected: // All members here are protected, instead of private for testing pur
 	void _destroy_game(); 
 	inline void print_board(const char* header);
 
-	uint m_gen_num; 			 // The number of generations to run
-	uint m_thread_num; 			 // Effective number of threads = min(thread_num, field_height)
+	int m_gen_num; 			 // The number of generations to run
+	int m_thread_num; 			 // Effective number of threads = min(thread_num, field_height)
 	vector<double> m_tile_hist; 	 // Shared Timing history for tiles: First (2 * m_gen_num) cells are the calculation durations for tiles in generation 1 and so on. 
 							   	 // Note: In your implementation, all m_thread_num threads must write to this structure. 
 	vector<double> m_gen_hist;  	 // Timing history for generations: x=m_gen_hist[t] iff generation t was calculated in x microseconds
@@ -63,14 +70,41 @@ protected: // All members here are protected, instead of private for testing pur
     int height;
     int width;
     string filename;
-	void Preform_Phase(bool first_phase, int upper, int lower);
+    PCQueue<job> job_queue;
+
+	void Preform_Phase(bool first_phase);
 	//
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 
 	bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
 
 
-	// TODO: Add in your variables and synchronization primitives  
+	// TODO: Add in your variables and synchronization primitives
+
+class GOLThread:public Thread{
+public:
+    GOLThread(uint id, Game& game): Thread(id), game(game){};
+    ~GOLThread() override = default;
+
+    void thread_workload() override {
+        GOL_Args my_args = *((GOL_Args*)args);
+        for (int i = 0; i < 2 * my_args.num_of_gens; ++i) {
+            job my_job = my_args.assignments.pop();
+
+            auto start_time = std::chrono::high_resolution_clock::now();
+            my_args.func(my_job.is_first_phase, my_job.upper_row, my_job.lower_row);
+            auto end_time = std::chrono::high_resolution_clock::now();
+
+            auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+            my_args.m_tile_hist.insert(elapsed_time);
+
+            my_args.s.up();
+        }
+        pthread_exit(nullptr);
+    }
+private:
+    Game& game;
+};
 
 };
 #endif

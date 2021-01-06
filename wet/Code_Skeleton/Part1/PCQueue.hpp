@@ -14,18 +14,18 @@ public:
     }
 
     ~PCQueue(){
-        pthread_mutex_destroy(&m);
-        pthread_cond_destroy(&c);
+        pthread_mutex_destroy(&this->m);
+        pthread_cond_destroy(&this->c);
     }
 
     T pop(){
-        pthread_mutex_lock(&m);
-        while(q.empty()){
-            pthread_cond_wait(&c, &m);
+        pthread_mutex_lock(&this->m);
+        while(this->q.empty()){
+            pthread_cond_wait(&this->c, &this->m);
         }
         T to_return = this->q.front();
         this->q.pop();
-        pthread_mutex_unlock(&m);
+        pthread_mutex_unlock(&this->m);
         return to_return;
     }
 
