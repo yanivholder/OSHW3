@@ -3,7 +3,6 @@
 
 //#include "../Part1/Headers.hpp"
 //#include "../Part1/PCQueue.hpp"
-#include "Args.h"
 
 class Thread
 {
@@ -38,7 +37,10 @@ protected:
     uint m_thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
 
 private:
-    static void * entry_func(void * thread) { ((Thread *)thread)->thread_workload(); return NULL; }
+    static void * entry_func(void * thread){
+        ((Thread *)thread)->thread_workload();
+        return NULL;
+    }
     pthread_t m_thread;
 };
 

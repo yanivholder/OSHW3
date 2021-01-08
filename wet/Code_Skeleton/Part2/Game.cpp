@@ -141,7 +141,7 @@ void Game::_init_game() {
 	// Create & Start threads
 
 	for (uint i = 0; i < m_thread_num; ++i) {
-        m_threadpool[i] = new GOLThread(i);
+        m_threadpool[i] = new GOLThread(i, *this);
         m_threadpool[i]->start();
     }
 	// Testing of your implementation will presume all threads are started here

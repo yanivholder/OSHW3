@@ -5,6 +5,7 @@
 #include "Thread.hpp"
 #include "../Part1/PCQueue.hpp"
 #include "../Part1/Semaphore.hpp"
+#include "Job.hpp"
 
 /*--------------------------------------------------------------------------------
 								  Species colors
@@ -71,8 +72,9 @@ protected: // All members here are protected, instead of private for testing pur
     int width;
     string filename;
     PCQueue<job> job_queue;
+    Semaphore semph;
 
-	void Preform_Phase(bool first_phase);
+	void Preform_Phase(bool first_phase, int upper, int lower);
 	//
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 
@@ -87,18 +89,17 @@ public:
     ~GOLThread() override = default;
 
     void thread_workload() override {
-        GOL_Args my_args = *((GOL_Args*)args);
-        for (int i = 0; i < 2 * my_args.num_of_gens; ++i) {
-            job my_job = my_args.assignments.pop();
+        for (int i = 0; i < 2 * game.m_gen_num; ++i) {
+            job my_job =game.job_queue.pop();
 
-            auto start_time = std::chrono::high_resolution_clock::now();
-            my_args.func(my_job.is_first_phase, my_job.upper_row, my_job.lower_row);
-            auto end_time = std::chrono::high_resolution_clock::now();
+            auto tile_start = std::chrono::system_clock::now();
+            game.Preform_Phase(my_job.is_first_phase, my_job.upper_row, my_job.lower_row);
+            auto tile_end = std::chrono::system_clock::now();
 
-            auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-            my_args.m_tile_hist.insert(elapsed_time);
+            auto elapsed_time = (double)std::chrono::duration_cast<std::chrono::microseconds>(tile_end - tile_start).count();
+            game.m_tile_hist.push_back(elapsed_time);
 
-            my_args.s.up();
+            game.semph.up();
         }
         pthread_exit(nullptr);
     }
