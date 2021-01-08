@@ -134,10 +134,13 @@ void Game::_init_game() {
     this->board_next = new Board;
     for(int i = 0; i < string_board->size(); i++)
     {
-        std::transform(string_board[i].begin(), string_board[i].end(),
-                       std::back_inserter((*this->board_curr)[i]),
-                [](const string& element) { return std::stoi(element); });
-        (*this->board_next)[i] = (*this->board_curr)[i];
+        vector<int> row;
+        for(int j = 0; j < string_board[0].size(); j++)
+        {
+            row.push_back(std::stoi((*string_board)[i][j]));
+        }
+        this->board_curr->push_back(row);
+        this->board_next->push_back(row);
     }
     delete string_board;
     this->rows_for_job = this->height / this->m_thread_num;
