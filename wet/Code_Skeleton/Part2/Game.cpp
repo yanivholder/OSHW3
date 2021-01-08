@@ -1,24 +1,22 @@
 #include "Game.hpp"
 #include "utils.hpp"
-#include <string.h>
-
 
 static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 /*--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------*/
 
-static int str_to_num(string s){
-    for (int i = 0; i < 7; ++i) {
-        if (strcmp(s.c_str(), colors[i]) == 0){
-            return i;
-        }
-    }
-}
-
-static string num_to_str(int num){
-    return (string)colors[num];
-}
+//static int str_to_num(string s){
+//    for (int i = 0; i < 7; ++i) {
+//        if (strcmp(s.c_str(), colors[i]) == 0){
+//            return i;
+//        }
+//    }
+//}
+//
+//static string num_to_str(int num){
+//    return (string)colors[num];
+//}
 
 /*--------------------------------------------------------------------------------
                             Perform phase functions
@@ -83,7 +81,7 @@ static int conformism(Board& board, int i, int j, int row_len, int col_len){
 }
 
 
-void Game::Preform_Phase(bool first_phase, int upper, int lower){
+void Game::Perform_Phase(bool first_phase, int upper, int lower){
     int row_len = this->width;
     int col_len = this->height;
     for (int i = lower; i <= upper; ++i) {
@@ -110,7 +108,7 @@ void Game::run() {
 	print_board("Initial Board");
 	for (uint i = 0; i < m_gen_num; ++i) {
 		auto gen_start = std::chrono::system_clock::now();
-		_step(i); // Iterates a single generation 
+		_step(i); // Iterates a single generation
 		auto gen_end = std::chrono::system_clock::now();
 		m_gen_hist.push_back((double)std::chrono::duration_cast<std::chrono::microseconds>(gen_end - gen_start).count());
 		print_board(nullptr);
@@ -143,12 +141,19 @@ void Game::_init_game() {
         this->board_next->push_back(row);
     }
     delete string_board;
+
+    // Checking effective number of threads
+    if(this->m_thread_num > this->height)
+    {
+        this->m_thread_num = this->height;
+    }
     this->rows_for_job = this->height / this->m_thread_num;
+
 	// Create & Start threads
 
-	for (uint i = 0; i < m_thread_num; ++i) {
-        m_threadpool[i] = new GOLThread(i, *this);
-        m_threadpool[i]->start();
+	for (uint i = 0; i < this->m_thread_num; ++i) {
+        this->m_threadpool.push_back(new GOLThread(i, *this));
+        this->m_threadpool[i]->start();
     }
 	// Testing of your implementation will presume all threads are started here
 
@@ -157,24 +162,38 @@ void Game::_init_game() {
 void Game::_step(uint curr_gen) {
 
     // Push jobs to queue (Phase 1)
-    semph = Semaphore(-this->m_thread_num + 1);
+    this->semph = new Semaphore(-this->m_thread_num + 1);
     PushJobs(true);
 
 	// Wait for the workers to finish calculating
-	semph.down();
+//    for(int i = 0; i < this->m_thread_num; i++)
+//    {
+//        job j = this->job_queue.pop();
+//        Perform_Phase(j.is_first_phase, j.upper_row, j.lower_row);
+//        this->semph->up();
+//    }
+    this->semph->down();
 
-	// Swap pointers between current and next field
-    SwapBoards(this->board_curr, this->board_next);
+	// Swap pointers between current and next
+    delete this->semph;
+    SwapBoards();
 
     // Push jobs to queue (Phase 2)
-    semph = Semaphore(-this->m_thread_num + 1);
+    this->semph = new Semaphore(-this->m_thread_num + 1);
     PushJobs(false);
 
     // Wait for the workers to finish calculating
-    semph.down();
+//    for(int i = 0; i < this->m_thread_num; i++)
+//    {
+//        job j = this->job_queue.pop();
+//        Perform_Phase(j.is_first_phase, j.upper_row, j.lower_row);
+//        this->semph->up();
+//    }
+    this->semph->down();
 
     // Swap pointers between current and next field
-    SwapBoards(this->board_curr, this->board_next);
+    delete this->semph;
+    SwapBoards();
 
     // NOTE: Threads must not be started here - doing so will lead to a heavy penalty in your grade
 }
@@ -215,12 +234,26 @@ void Game::PushJobs(bool is_phase_one)
     this->job_queue.push(j);
 }
 
-void Game::SwapBoards(Board* board1_p, Board* board2_p)
-{
-    Board* tmp_board_p = board1_p;
-    board1_p = board2_p;
-    board2_p = tmp_board_p;
+void Game::SwapBoards() {
+    Board* tmp_board_p = this->board_curr;
+    this->board_curr = this->board_next;
+    this->board_next = tmp_board_p;
 }
+
+job Game::GetJob()
+{
+    return this->job_queue.pop();
+}
+int Game::GetGenNum()
+{
+    return this->m_gen_num;
+}
+void Game::AppendToTileHist(double t)
+{
+    this->m_tile_hist.push_back(t);
+}
+
+
 
 /*--------------------------------------------------------------------------------
 								

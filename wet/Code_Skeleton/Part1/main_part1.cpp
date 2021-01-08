@@ -36,6 +36,9 @@ int main() {
 
     //PCQueue<std::string>* q = new PCQueue<std::string>();
 
+    Semaphore semph = Semaphore(-5);
+    semph.up();
+
     struct arg_struct args1;
     args1.s = std::string("first");
     args1.q = PCQueue<std::string>();

@@ -9,8 +9,8 @@ class PCQueue
 public:
     PCQueue(){
         this->q = std::queue<T>();
-        pthread_mutex_init(&this->m, NULL);
-        pthread_cond_init(&this->c, NULL);
+        pthread_mutex_init(&this->m, nullptr);
+        pthread_cond_init(&this->c, nullptr);
     }
 
     ~PCQueue(){

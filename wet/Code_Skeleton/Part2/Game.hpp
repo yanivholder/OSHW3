@@ -49,6 +49,14 @@ public:
 	const vector<double> tile_hist() const; // Returns the tile timing histogram
 	uint thread_num() const; //Returns the effective number of running threads = min(thread_num, field_height)
 
+	// We added
+    Semaphore* semph;
+
+    job GetJob();
+    int GetGenNum();
+    void AppendToTileHist(double t);
+    void Perform_Phase(bool first_phase, int upper, int lower);
+    //
 
 protected: // All members here are protected, instead of private for testing purposes
 
@@ -73,11 +81,9 @@ protected: // All members here are protected, instead of private for testing pur
     int rows_for_job;
     string filename;
     PCQueue<job> job_queue;
-    Semaphore semph;
 
-	void Preform_Phase(bool first_phase, int upper, int lower);
     void PushJobs(bool is_phase_one);
-    static void SwapBoards(Board* board1_p, Board* board2_p);
+    void SwapBoards();
 	//
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 
@@ -85,6 +91,8 @@ protected: // All members here are protected, instead of private for testing pur
 
 
 	// TODO: Add in your variables and synchronization primitives
+};
+
 
 class GOLThread:public Thread{
 public:
@@ -92,23 +100,21 @@ public:
     ~GOLThread() override = default;
 
     void thread_workload() override {
-        for (int i = 0; i < 2 * game.m_gen_num; ++i) {
-            job my_job =game.job_queue.pop();
+        for (int i = 0; i < 2 * this->game.GetGenNum(); ++i) {
+            job my_job =game.GetJob();
 
             auto tile_start = std::chrono::system_clock::now();
-            game.Preform_Phase(my_job.is_first_phase, my_job.upper_row, my_job.lower_row);
+            game.Perform_Phase(my_job.is_first_phase, my_job.upper_row, my_job.lower_row);
             auto tile_end = std::chrono::system_clock::now();
 
             auto elapsed_time = (double)std::chrono::duration_cast<std::chrono::microseconds>(tile_end - tile_start).count();
-            game.m_tile_hist.push_back(elapsed_time);
+            game.AppendToTileHist(elapsed_time);
 
-            game.semph.up();
+            game.semph->up();
         }
-        pthread_exit(nullptr);
     }
 private:
     Game& game;
 };
 
-};
 #endif
