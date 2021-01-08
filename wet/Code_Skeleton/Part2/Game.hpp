@@ -33,7 +33,7 @@ struct game_params {
 };
 
 // We added
-
+typedef vector<vector<int>> Board;
 //
 
 /*--------------------------------------------------------------------------------
@@ -66,15 +66,18 @@ protected: // All members here are protected, instead of private for testing pur
 	vector<Thread*> m_threadpool; // A storage container for your threads. This acts as the threadpool. 
 
 	// We Added:
-    vector<vector<int>>* board_curr;
-    vector<vector<int>>* board_next;
+    Board* board_curr;
+    Board* board_next;
     int height;
     int width;
+    int rows_for_job;
     string filename;
     PCQueue<job> job_queue;
     Semaphore semph;
 
 	void Preform_Phase(bool first_phase, int upper, int lower);
+    void PushJobs(bool is_phase_one);
+    static void SwapBoards(Board* board1_p, Board* board2_p);
 	//
 
 	bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT 

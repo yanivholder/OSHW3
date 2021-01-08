@@ -20,6 +20,9 @@ static string num_to_str(int num){
     return (string)colors[num];
 }
 
+/*--------------------------------------------------------------------------------
+                            Perform phase functions
+--------------------------------------------------------------------------------*/
 
 static bool inbound(int i, int j, int lim_x, int lim_y){
     if ((i >= 0 && i < lim_x) && (j >= 0 && j < lim_y)){
@@ -42,7 +45,7 @@ static int dominant_species(int species_hist[]){
     return max_index;
 }
 
-static int color_in_next(vector<vector<int>>& board, int i, int j, int row_len, int col_len, bool dead){
+static int color_in_next(Board& board, int i, int j, int row_len, int col_len, bool dead){
     int neighbour_count = 0;
     int species_hist[8] = {0,0,0,0,0,0,0,0};
     for (int k = -1; k <= 1 ; ++k) {
@@ -65,7 +68,7 @@ static int color_in_next(vector<vector<int>>& board, int i, int j, int row_len, 
     }
 }
 
-static int conformism(vector<vector<int>>& board, int i, int j, int row_len, int col_len){
+static int conformism(Board& board, int i, int j, int row_len, int col_len){
     int neighbour_count = 0;
     int neighbour_sum = 0;
     for (int k = -1; k <= 1 ; ++k) {
@@ -95,12 +98,11 @@ void Game::Preform_Phase(bool first_phase, int upper, int lower){
             }
         }
     }
-    //swap after we finished
-    auto temp = this->board_curr;
-    this->board_curr = this->board_next;
-    this->board_next = temp;
 }
 
+/*--------------------------------------------------------------------------------
+                            Main game flow functions
+--------------------------------------------------------------------------------*/
 
 void Game::run() {
 
@@ -128,8 +130,8 @@ void Game::_init_game() {
 
     this->width = (*string_board)[0].size();
     this->height = string_board->size();
-    this->board_curr = new vector<vector<int>>;
-    this->board_next = new vector<vector<int>>;
+    this->board_curr = new Board;
+    this->board_next = new Board;
     for(int i = 0; i < string_board->size(); i++)
     {
         std::transform(string_board[i].begin(), string_board[i].end(),
@@ -138,6 +140,7 @@ void Game::_init_game() {
         (*this->board_next)[i] = (*this->board_curr)[i];
     }
     delete string_board;
+    this->rows_for_job = this->height / this->m_thread_num;
 	// Create & Start threads
 
 	for (uint i = 0; i < m_thread_num; ++i) {
@@ -150,53 +153,26 @@ void Game::_init_game() {
 
 void Game::_step(uint curr_gen) {
 
-    int rows_for_job = this->height / this->m_thread_num;
-    job j;
-    vector<vector<int>>* tmp_board_p;
-
     // Push jobs to queue (Phase 1)
-    Semaphore semph(-this->m_thread_num + 1);
-    j.is_first_phase = true;
-	for(int i = 0; i < this->m_thread_num - 1; i++)
-    {
-	    j.lower_row = i * rows_for_job;
-	    j.upper_row = ((i + 1) * rows_for_job) - 1;
-	    this->job_queue.push(j);
-    }
-	j.lower_row = (this->m_thread_num - 1) * rows_for_job;
-	j.upper_row = this->height - 1;
-	this->job_queue.push(j);
+    semph = Semaphore(-this->m_thread_num + 1);
+    PushJobs(true);
 
 	// Wait for the workers to finish calculating
 	semph.down();
 
 	// Swap pointers between current and next field
-    tmp_board_p = this->board_next;
-    this->board_next = this->board_curr;
-    board_curr = tmp_board_p;
-    tmp_board_p = nullptr;
+    SwapBoards(this->board_curr, this->board_next);
 
     // Push jobs to queue (Phase 2)
     semph = Semaphore(-this->m_thread_num + 1);
-    j.is_first_phase = false;
-    for(int i = 0; i < this->m_thread_num - 1; i++)
-    {
-        j.lower_row = i * rows_for_job;
-        j.upper_row = ((i + 1) * rows_for_job) - 1;
-        this->job_queue.push(j);
-    }
-    j.lower_row = (this->m_thread_num - 1) * rows_for_job;
-    j.upper_row = this->height - 1;
-    this->job_queue.push(j);
+    PushJobs(false);
 
     // Wait for the workers to finish calculating
     semph.down();
 
     // Swap pointers between current and next field
-    tmp_board_p = this->board_next;
-    this->board_next = this->board_curr;
-    board_curr = tmp_board_p;
-    tmp_board_p = nullptr;
+    SwapBoards(this->board_curr, this->board_next);
+
     // NOTE: Threads must not be started here - doing so will lead to a heavy penalty in your grade
 }
 
@@ -220,6 +196,29 @@ Game::Game(const game_params& gp) : interactive_on(gp.interactive_on), print_on(
                              m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) { }
 
 Game::~Game() { }
+
+void Game::PushJobs(bool is_phase_one)
+{
+    job j;
+    j.is_first_phase = is_phase_one;
+    for(int i = 0; i < this->m_thread_num - 1; i++)
+    {
+        j.lower_row = i * this->rows_for_job;
+        j.upper_row = ((i + 1) * this->rows_for_job) - 1;
+        this->job_queue.push(j);
+    }
+    j.lower_row = (this->m_thread_num - 1) * this->rows_for_job;
+    j.upper_row = this->height - 1;
+    this->job_queue.push(j);
+}
+
+void Game::SwapBoards(Board* board1_p, Board* board2_p)
+{
+    Board* tmp_board_p = board1_p;
+    board1_p = board2_p;
+    board2_p = tmp_board_p;
+}
+
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
