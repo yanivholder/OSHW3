@@ -81,6 +81,7 @@ protected: // All members here are protected, instead of private for testing pur
     int rows_for_job;
     string filename;
     PCQueue<job> job_queue;
+    pthread_mutex_t mx;
 
     void PushJobs(bool is_phase_one);
     void SwapBoards();

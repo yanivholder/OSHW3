@@ -111,7 +111,8 @@ void Game::run() {
 		_step(i); // Iterates a single generation
 		auto gen_end = std::chrono::system_clock::now();
 		m_gen_hist.push_back((double)std::chrono::duration_cast<std::chrono::microseconds>(gen_end - gen_start).count());
-		print_board(nullptr);
+		string s = "gen = " + std::to_string(i+1);
+		print_board(s.c_str());
 	} // generation loop
 	print_board("Final Board");
 	_destroy_game();
@@ -215,7 +216,9 @@ void Game::_destroy_game(){
 --------------------------------------------------------------------------------*/
 
 Game::Game(const game_params& gp) : interactive_on(gp.interactive_on), print_on(gp.print_on),
-                             m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) { }
+                             m_gen_num(gp.n_gen), m_thread_num(gp.n_thread), filename(gp.filename) {
+    pthread_mutex_init(&this->mx, nullptr);
+}
 
 Game::~Game() { }
 
@@ -250,7 +253,9 @@ int Game::GetGenNum()
 }
 void Game::AppendToTileHist(double t)
 {
+    pthread_mutex_lock(&this->mx);
     this->m_tile_hist.push_back(t);
+    pthread_mutex_unlock(&this->mx);
 }
 
 
