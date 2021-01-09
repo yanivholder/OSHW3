@@ -51,7 +51,7 @@ static int color_in_next(Board& board, int i, int j, int row_len, int col_len, b
             if (k == 0 && l == 0){
                 continue;
             }
-            if (inbound(i+k, j+l, row_len, col_len) && (board[i+k][j+l] > 0)){
+            if (inbound(i+k, j+l, col_len, row_len) && (board[i+k][j+l] > 0)){
                 neighbour_count++;
                 species_hist[board[i+k][j+l]]++;
             }
@@ -71,7 +71,7 @@ static int conformism(Board& board, int i, int j, int row_len, int col_len){
     double neighbour_sum = 0;
     for (int k = -1; k <= 1 ; ++k) {
         for (int l = -1; l <= 1; ++l) {
-            if (inbound(i+k, j+l, row_len, col_len) && (board[i+k][j+l] > 0)){
+            if (inbound(i+k, j+l, col_len, row_len) && (board[i+k][j+l] > 0)){
                 neighbour_count++;
                 neighbour_sum += board[i+k][j+l];
             }
@@ -139,10 +139,11 @@ void Game::_init_game() {
     this->height = string_board->size();
     this->board_curr = new Board;
     this->board_next = new Board;
-    for(int i = 0; i < string_board->size(); i++)
+    cout << "first = " << string_board->size() << ", second = " << string_board[0].size() << ", third = " << (*string_board)[0].size() << endl;
+    for(int i = 0; i < this->height; i++)
     {
         vector<int> row;
-        for(int j = 0; j < string_board[0].size(); j++)
+        for(int j = 0; j < this->width; j++)
         {
             row.push_back(std::stoi((*string_board)[i][j]));
         }
