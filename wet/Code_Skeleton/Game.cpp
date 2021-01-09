@@ -44,6 +44,7 @@ static int dominant_species(int species_hist[]){
 }
 
 static int color_in_next(Board& board, int i, int j, int row_len, int col_len, bool dead){
+//    cout << "i have " << col_len << " rows and " << row_len << "cols" << endl;
     int neighbour_count = 0;
     int species_hist[8] = {0,0,0,0,0,0,0,0};
     for (int k = -1; k <= 1 ; ++k) {
@@ -57,6 +58,7 @@ static int color_in_next(Board& board, int i, int j, int row_len, int col_len, b
             }
         }
     }
+//    cout << "for color " << board[i][j] << ", the neighbor count is " << neighbour_count << endl;
     if ( !dead && (neighbour_count == 3 || neighbour_count == 2)){
         return board[i][j];
     } else if ( dead && neighbour_count == 3){
@@ -93,7 +95,7 @@ void Game::Perform_Phase(bool first_phase, int upper, int lower){
     int row_len = this->width;
     int col_len = this->height;
     for (int i = lower; i <= upper; ++i) {
-        for (int j = 0; j < col_len; ++j) {
+        for (int j = 0; j < row_len; ++j) {
             bool dead = ((*this->board_curr)[i][j] == 0);
             if (first_phase){
                 (*this->board_next)[i][j] = color_in_next(*this->board_curr, i, j, row_len, col_len, dead);
