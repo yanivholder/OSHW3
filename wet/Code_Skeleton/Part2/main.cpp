@@ -62,7 +62,7 @@ static void calc_and_append_statistics(uint n_threads, const vector<double>& gen
 	if (!file_exists)
 	{
 		results_file << "EffectiveThreadNum,GenNum,Gen_Rate[1/us],Avg_Gen_Time[us],Tile_Rate[1/us],Avg_Tile_Time[us],Total_Time[us]" << endl;
-		cout << "Successfully created results file: " << DEF_RESULTS_FILE_NAME << endl;
+		//cout << "Successfully created results file: " << DEF_RESULTS_FILE_NAME << endl;
 	}
 
 	results_file << n_threads << "," << gen_hist.size() << "," << gen_rate << "," << avg_gen_time << "," << tile_rate

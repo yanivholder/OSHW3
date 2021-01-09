@@ -31,7 +31,7 @@ void* Fpush(void* args){
 
 
 
-int main() {
+int main2() {
     std::cout << "starting program" << std::endl;
 
     //PCQueue<std::string>* q = new PCQueue<std::string>();
