@@ -316,11 +316,11 @@ inline void Game::print_board(const char* header) {
 
 
 const vector<double> Game::gen_hist() const{
-    return this->gen_hist();
+    return this->m_gen_hist;
 }
 
 const vector<double> Game::tile_hist() const{
-    return this->tile_hist();
+    return this->m_tile_hist;
 }
 
 uint Game::thread_num() const{
