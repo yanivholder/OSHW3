@@ -93,6 +93,8 @@ void H(singlephore* h, int bound, int delta) {
     h->value += delta;
 }
 
+// Section 1
+
 typedef struct mutex {
     singlephore h;
 } mutex;
@@ -110,6 +112,8 @@ void mutex_unlock(mutex* m) {
     H(&m->h, -100, 2); // if h->value < -100 (never), wait.
                                    // else (always), h->value == -2 so set h->value = 0 (open)
 }
+
+// Section 2
 
 typedef struct condvar {
     mutex m;
@@ -151,6 +155,58 @@ void cond_wait(condvar* c, mutex* m) {
 //    c->is_someone_waiting = false;
 //    mutex_unlock(&c->m);
 }
+
+
+// Section 4
+
+typedef struct singlephore_waiter {
+	// TODO add
+}
+
+typedef struct singlephore {
+	mutex m;
+	int value;
+	std::vector<singlephore_waiter*> waiters;
+	// TODO add
+} singlephore;
+
+void singlephore_init(singlephore* h) {
+	h->value = 0;
+	// TODO add
+}
+
+void H(singlephore *h, int bound, int delta) {
+	singlephore_waiter hw;
+	//TODO add
+}
+
+//######################################################################################
+//                       Part THREE
+//######################################################################################
+
+// Section 1-4
+
+class Barrier {
+private:
+	int working;
+public:
+	Barrier() {
+		working = 0;
+	}
+	void increase() {
+		working++;
+	}
+	void decrease() {
+		working--;
+	}
+	void wait() {
+		while(working != 0) {}
+	}
+};
+
+// Section 5
+
+
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
