@@ -111,8 +111,8 @@ void Game::run() {
 		_step(i); // Iterates a single generation
 		auto gen_end = std::chrono::system_clock::now();
 		m_gen_hist.push_back((double)std::chrono::duration_cast<std::chrono::microseconds>(gen_end - gen_start).count());
-		string s = "gen = " + std::to_string(i+1);
-		print_board(s.c_str());
+		//string s = "gen = " + std::to_string(i+1);
+		print_board(nullptr);
 	} // generation loop
 	print_board("Final Board");
 	_destroy_game();
@@ -275,7 +275,6 @@ inline void Game::print_board(const char* header) {
 		if (header != nullptr)
 			cout << "<------------" << header << "------------>" << endl;
 		
-		// TODO: Print the board
         cout << u8"╔" << string(u8"═") * this->width << u8"╗" << endl;
         for (uint i = 0; i < this->height; ++i) {
             cout << u8"║";

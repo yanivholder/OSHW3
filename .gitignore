@@ -8,5 +8,5 @@ wet/my_main.cpp
 wet/main.cpp
 wet/Code_Skeleton/Part1/*.o
 wet/Code_Skeleton/Part2/*.o
-wet/GameOfLife
+wet/Code_Skeleton/GameOfLife
 wet/Code_Skeleton/.depend
