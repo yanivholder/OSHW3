@@ -312,7 +312,17 @@ inline void Game::print_board(const char* header) {
 			cout << u8"║" << endl;
 		}
 		cout << u8"╚" << string(u8"═") * field_width << u8"╝" << endl;
-*/ 
+*/
 
 
+const vector<double> Game::gen_hist() const{
+    return this->gen_hist();
+}
 
+const vector<double> Game::tile_hist() const{
+    return this->tile_hist();
+}
+
+uint Game::thread_num() const{
+    return this->m_thread_num;
+}
