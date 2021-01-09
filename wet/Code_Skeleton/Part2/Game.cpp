@@ -35,8 +35,8 @@ static int dominant_species(int species_hist[]){
     int max_index=0;
     int max_appearance=0;
     for (int i = 1; i < 8; ++i) { //skip appearances of 0
-        if (species_hist[i] > max_appearance){
-            max_appearance = species_hist[i];
+        if (species_hist[i]*i > max_appearance){
+            max_appearance = species_hist[i]*i;
             max_index = i;
         }
     }
@@ -67,8 +67,8 @@ static int color_in_next(Board& board, int i, int j, int row_len, int col_len, b
 }
 
 static int conformism(Board& board, int i, int j, int row_len, int col_len){
-    int neighbour_count = 0;
-    int neighbour_sum = 0;
+    double neighbour_count = 0;
+    double neighbour_sum = 0;
     for (int k = -1; k <= 1 ; ++k) {
         for (int l = -1; l <= 1; ++l) {
             if (inbound(i+k, j+l, row_len, col_len) && (board[i+k][j+l] > 0)){
@@ -77,6 +77,14 @@ static int conformism(Board& board, int i, int j, int row_len, int col_len){
             }
         }
     }
+//    double div = neighbour_sum/neighbour_count;
+//    if (div - floor(div) >= 0.5){
+//        return ceil(div);
+//    } else{
+//        return floor(div);
+//    }
+//    double div = neighbour_sum/neighbour_count;
+//    cout << "the div is: " << div << " and the round is: " << round(div) << endl;
     return round(neighbour_sum/neighbour_count);
 }
 
@@ -178,6 +186,8 @@ void Game::_step(uint curr_gen) {
 	// Swap pointers between current and next
     delete this->semph;
     SwapBoards();
+//    string s = "before"; //TODO - remove
+//    print_board(s.c_str()); //TODO - remove
 
     // Push jobs to queue (Phase 2)
     this->semph = new Semaphore(-this->m_thread_num + 1);
