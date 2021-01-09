@@ -1,10 +1,10 @@
 #ifndef __GAMERUN_H
 #define __GAMERUN_H
 
-#include "../Part1/Headers.hpp"
+#include "Headers.hpp"
 #include "Thread.hpp"
-#include "../Part1/PCQueue.hpp"
-#include "../Part1/Semaphore.hpp"
+#include "PCQueue.hpp"
+#include "Semaphore.hpp"
 #include "Job.hpp"
 
 /*--------------------------------------------------------------------------------

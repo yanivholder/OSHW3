@@ -139,7 +139,6 @@ void Game::_init_game() {
     this->height = string_board->size();
     this->board_curr = new Board;
     this->board_next = new Board;
-    cout << "first = " << string_board->size() << ", second = " << string_board[0].size() << ", third = " << (*string_board)[0].size() << endl;
     for(int i = 0; i < this->height; i++)
     {
         vector<int> row;
